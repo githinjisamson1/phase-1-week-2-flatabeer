@@ -1,73 +1,92 @@
-// Code here
+function handleReviewFormSubmission(e, reviewList) {
+  // prevent default refresh behavior
+  e.preventDefault();
 
-function handleDOMContentLoaded() {
-  // grab elements
-  const ulBeer = document.querySelector("#beer-list");
-  const h2 = document.querySelector("#beer-name");
-  const image = document.querySelector("#beer-image");
-  const em = document.querySelector("#beer-description");
-  const formDesc = document.querySelector("#description-form");
-  const textareaDesc = document.querySelector("#description");
-  const ulReview = document.querySelector("#review-list");
-  const formReview = document.querySelector("#review-form");
-  const textareaReview = document.querySelector("#review");
+  //   add new review to page
+  const reviewValue = document.querySelector("#review").value;
+  const liReview = document.createElement("li");
+  liReview.innerHTML = reviewValue;
+  reviewList.appendChild(liReview);
 
-  //   fetch API - all
-  fetch("http://localhost:3000/beers")
-    .then((response) => {
-      return response.json();
-    })
-    .then((data) => {
-      data.map((beer) => {
-        //   console.log(data);
+  //   clear form values upon submission
+  e.target.reset();
+}
 
-        const li = document.createElement("li");
-        li.textContent = beer.name;
-        ulBeer.appendChild(li);
-      });
-    });
+function handleDescFormSubmission(e, beerDesc) {
+  e.preventDefault();
 
-  // fetch API  - 1
+  //   edit description
+  const descValue = document.querySelector("#description").value;
+  beerDesc.innerHTML = descValue;
+  e.target.reset();
+}
+
+function allBeersMenu(data) {
+  const beerList = document.querySelector("#beer-list");
+
+  //   iterate data received
+  data.forEach((beer) => {
+    const liBeer = document.createElement("li");
+    liBeer.innerHTML = beer.name;
+    beerList.appendChild(liBeer);
+  });
+}
+
+function seeFirstBeerDetails(data) {
+  const beerName = document.querySelector("#beer-name");
+  const beerImage = document.querySelector("#beer-image");
+  const beerDesc = document.querySelector("#beer-description");
+  const reviewList = document.querySelector("#review-list");
+  const descriptionForm = document.querySelector("#description-form");
+  const reviewForm = document.querySelector("#review-form");
+
+  //   manipulate dom
+  beerName.innerHTML = data.name;
+  beerImage.src = data.image_url;
+  beerDesc.innerHTML = data.description;
+
+  //   iterate reviews
+  data.reviews.forEach((review) => {
+    const liReview = document.createElement("li");
+    liReview.innerHTML = review;
+    reviewList.appendChild(liReview);
+  });
+
+  descriptionForm.addEventListener("submit", (e) => {
+    handleDescFormSubmission(e, beerDesc);
+  });
+
+  //   review form submission
+  reviewForm.addEventListener("submit", (e) => {
+    handleReviewFormSubmission(e, reviewList);
+  });
+}
+
+function handleDOMContentLoaded(e) {
+  // fetch API - 1
   fetch("http://localhost:3000/beers/1")
     .then((response) => {
       return response.json();
     })
     .then((data) => {
-      //   console.log(data);
-
-      //   manipulate the dom
-      h2.textContent = data.name;
-      image.src = data.image_url;
-      em.textContent = data.description;
-
-      //   iterate/display reviews
-      data.reviews.map((review) => {
-        const li = document.createElement("li");
-        li.textContent = review;
-        ulReview.appendChild(li);
-      });
+      seeFirstBeerDetails(data);
+    })
+    .catch((err) => {
+      console.log(err);
     });
 
-  // edit beer description
-  formDesc.addEventListener("submit", function (e) {
-    // console.log(e.target);
-
-    e.preventDefault();
-    em.textContent = textareaDesc.value;
-    formDesc.reset();
-  });
-
-  // add review
-  formReview.addEventListener("submit", function (e) {
-    // console.log(e.target);
-
-    e.preventDefault();
-    const li = document.createElement("li");
-    li.textContent = textareaReview.value;
-    ulReview.appendChild(li);
-    formReview.reset();
-  });
+  // fetch API - all
+  fetch("http://localhost:3000/beers")
+    .then((response) => {
+      return response.json();
+    })
+    .then((data) => {
+      allBeersMenu(data);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }
 
-// waits for markup/HTML to load first
+// wait HTML to load first
 document.addEventListener("DOMContentLoaded", handleDOMContentLoaded);
